@@ -1,0 +1,159 @@
+<html>
+<head>
+	<title> DALI Challange 2 </title>
+
+	<!-- Scrips -->
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+	<script src="node_modules/chart.js/dist/Chart.js"></script>
+	<script src="node_modules/rainbowvis.js/rainbowvis.js"></script>
+	<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.js'></script>
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+	<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.css' rel='stylesheet' />
+	<link rel="stylesheet" href="style.css"/>
+
+</head>
+
+<body ng-app="myApp">
+	<div ng-controller="myCtrl" class="container-fluid" data-ng-init="init()">
+		<div class="row w-100 h-25">
+			<span class="top"><h1>Dali Lab Dashboard</h1></span>
+			<div id="geoChart"></div>
+		</div>
+		<div class="row mh-100">
+			<div class="col-8">
+				<div class="row">
+					<ul class="nav">
+						<li class="nav-item mx-5">
+							<div class="form-group">
+								<label>Search</label>
+								<input type="text" class="form-control" ng-model="search.$"/>
+							</div>
+						</li>
+						<li class="nav-item mx-1">
+							<div class="form-group">
+								<label>Projects</label>
+								<select class="custom-select" multiple ng-model="search.project" ng-options="key as key for (key, value) in projects"></select>
+							</div>
+						</li>
+						<li class="nav-item mx-1">
+							<div class="form-group">
+								<label>Terms</label>
+								<select class="custom-select" multiple ng-model="search.terms_on" ng-options="key as key for (key, value) in terms"></select>
+							</div>
+						</li>
+						<li class="nav-item mx-5 d-flex align-items-end">
+							<div class="form-group">
+								<button class="btn btn-outline-success" ng-click="saveData()">Save</button>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="row scroll border mh-100">
+					<div class="card-columns overflow">
+						<div class="card" ng-repeat="node in dali_data | filter:search:checkSort" style="width:18rem">
+							<a name="{{node.name}}"></a>
+							<img class="card-img-top" src="http://mappy.dali.dartmouth.edu/{{node.iconUrl}}" alt="Card image cap">
+							<div class="card-body">
+								<h5 class="card-title">{{node.name}}</h5>
+								<h6 class="card-subtitle mb-2 text-muted">{{node.url}}</h6>
+								<p class="card-text">Message: {{node.message}}</p>
+							</div>
+							<ul class="list-group list-group-flush" ng-show="node.project[0] != ''">
+							    <li class="list-group-item" ng-repeat="proj in node.project">{{proj}}</li>
+							</ul>
+							<div class="card-body">
+								<button class="btn btn-outline" data-toggle="modal" data-target="#{{node.name}}Modal">Edit</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+				
+			<div class="col-4">
+				<div class="form-group">
+					<label>Charts</label>
+					<select ng-change="updateChartsView()" class="custom-select" ng-model="selectedChart" ng-options="key as value for (key, value) in charts"></select>
+				</div>
+				<div class="chartView">
+					<canvas ng-repeat="(key, value) in charts" ng-show="key == selectedChart" id="{{key}}" class="canvas"width="100%" height="80%"></canvas>
+				</div>
+			</div>
+		</div>
+
+		<div ng-repeat="node in dali_data" class="modal fade" id="{{node.name}}Modal" tabindex="-1" role="dialog">
+		  <div class="modal-dialog modal-lg">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h5 class="modal-title">{{node.name}}</h5>
+		      </div>
+		      <div class="modal-body">
+		        <p>
+		        	<form>
+					  <div class="form-group row">
+					    <label class="col-2">Name</label>
+					    <div class="col-10">
+					    	<input type="text" class="form-control" ng-model="node.name">
+					    </div>
+					  </div>
+					  <div class="form-group row">
+					    <label class="col-2">Image Url</label>
+						<div class="input-group col-10">
+						  <input type="text" class="form-control" ng-model="node.iconUrl">
+						</div>
+					  </div>
+					  <div class="form-group row">
+					    <label class="col-2">Url</label>
+						<div class="input-group col-10">
+						  <input type="text" class="form-control" ng-model="node.url">
+						</div>
+					  </div>
+					  <div class="form-group row">
+					    <label class="col-2">Message</label>
+					    <div class="col-10">
+					    	<input type="text" class="form-control" ng-model="node.message">
+					    </div>
+					  </div>
+					   <div class="form-group row">
+					    <label class="col-2">Long & Lat</label>
+						<div class="input-group col-10">
+						  <div class="input-group-prepend">
+						    <span class="input-group-text">Longitude</span>
+						  </div>
+						  <input type="text" class="form-control" ng-model="node.lat_long[1]">
+						  <input type="text" class="form-control" ng-model="node.lat_long[0]">
+						  <div class="input-group-append">
+						    <span class="input-group-text">Latitude</span>
+						  </div>
+						</div>
+					  </div>
+					  <div class="form-group row">
+					  	<label class="col-2">Terms On</label>
+					  	<div class="input-group col-10">
+					  		<select class="form-control" multiple ng-model="node.terms_on" ng-options="key as key for (key, value) in terms"></select>
+					  	</div>
+					  </div>
+					  <div class="form-group row">
+					  	<label class="col-2">Projects</label>
+					  	<div class="input-group col-10">
+					  		<select class="form-control" multiple ng-model="node.project" ng-options="key as key for (key, value) in projects"></select>	
+					  	</div>
+					  </div>
+					</form>
+			      </div>
+			  	</p>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="updateCharts()">Save and Close</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+	</div>
+</body>
+<script src="app.js"></script>
+</html>
