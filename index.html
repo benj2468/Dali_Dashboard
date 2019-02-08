@@ -20,13 +20,13 @@
 </head>
 
 <body ng-app="myApp">
-	<div ng-controller="myCtrl" class="container-fluid" data-ng-init="init()">
+	<div ng-controller="myCtrl" class="container-fluid mh-100" data-ng-init="init()">
 		<div class="row w-100 h-25">
 			<span class="top"><h1>Dali Lab Dashboard</h1></span>
 			<div id="geoChart"></div>
 		</div>
-		<div class="row mh-100">
-			<div class="col-8">
+		<div class="row mh-100 d-flex-grow">
+			<div class="col-9">
 				<div class="row">
 					<ul class="nav">
 						<li class="nav-item mx-5">
@@ -54,11 +54,12 @@
 						</li>
 					</ul>
 				</div>
-				<div class="row scroll border mh-100">
+				<div class="row scroll border" id="cardRow">
 					<div class="card-columns overflow">
-						<div class="card" ng-repeat="node in dali_data | filter:search:checkSort" style="width:18rem">
+						<div class="card" ng-repeat="node in dali_data | filter:search:checkSort" style="width:15rem">
 							<a name="{{node.name}}"></a>
-							<img class="card-img-top" src="http://mappy.dali.dartmouth.edu/{{node.iconUrl}}" alt="Card image cap">
+							<a data-toggle="modal" data-target="#{{node.name}}Modal" class="pointer">
+							<img class="card-img-top" src="http://mappy.dali.dartmouth.edu/{{node.iconUrl}}" alt="Card image cap"></a>
 							<div class="card-body">
 								<h5 class="card-title">{{node.name}}</h5>
 								<h6 class="card-subtitle mb-2 text-muted">{{node.url}}</h6>
@@ -67,15 +68,13 @@
 							<ul class="list-group list-group-flush" ng-show="node.project[0] != ''">
 							    <li class="list-group-item" ng-repeat="proj in node.project">{{proj}}</li>
 							</ul>
-							<div class="card-body">
-								<button class="btn btn-outline" data-toggle="modal" data-target="#{{node.name}}Modal">Edit</button>
-							</div>
 						</div>
+
 					</div>
 				</div>
 			</div>
 				
-			<div class="col-4">
+			<div class="col-3">
 				<div class="form-group">
 					<label>Charts</label>
 					<select ng-change="updateChartsView()" class="custom-select" ng-model="selectedChart" ng-options="key as value for (key, value) in charts"></select>
@@ -105,6 +104,9 @@
 					    <label class="col-2">Image Url</label>
 						<div class="input-group col-10">
 						  <input type="text" class="form-control" ng-model="node.iconUrl">
+						  <div class="input-group-append">
+						    <span class="input-group-text"><img width="50" height="auto" src="http://mappy.dali.dartmouth.edu/{{node.iconUrl}}" alt="Card image cap"></a></span>
+						  </div>
 						</div>
 					  </div>
 					  <div class="form-group row">
@@ -156,4 +158,5 @@
 	</div>
 </body>
 <script src="app.js"></script>
+<script src="javascript.js"></script>
 </html>
