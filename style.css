@@ -1,0 +1,40 @@
+html{
+	height:100%;
+}
+
+body {
+	padding:20px;
+	height:100%;
+}
+
+.scroll {
+	overflow: scroll;
+}
+
+.card-columns {
+	column-count: 3;
+}
+
+.chartView{
+	width:100%;
+	height:50%;
+	position:relative;
+	padding:0;
+}
+
+#geoChart {
+	width:100%;
+	height:inherit;
+	top:0;
+	left:0;
+	position:absolute;
+}
+.marker {
+	width: 100px;
+ 	height: 100px;
+ 	border-radius: 50%;
+}
+
+.top {
+	z-index:99;
+}
