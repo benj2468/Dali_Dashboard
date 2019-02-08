@@ -3,45 +3,50 @@ rainbow.setSpectrum("#42f4a7","#9941f2");
 
 angular.module("myApp", [])
 .controller("myCtrl", function($scope, $http) {
-	$scope.dali_data = []
-	$scope.projects = {}
-	$scope.charts = {
+	// Initialize the structures that will hold the data
+	$scope.dali_data = [] // All of the people, will call each person within this array a node
+	$scope.projects = {} // All of the projects, this is an object becuase each project will have a number assigned to how many people are in it
+	$scope.charts = { // The charts, for easy access and to display
 		'termChart': 'On Terms', 
 		'projectChart': "Project Distribution",
 	}
-	$scope.selectedChart = $scope.charts[0]
-	$scope.geomapMarkers = []
-	$http.get("/members.json").then(function(res){
-			$scope.dali_data = res.data
-			if ($scope.dali_data){
-				for (var node of $scope.dali_data) {
-					if (node.project.length == 0){
-						node.project = new Array("")
+	$scope.selectedChart = Object.keys($scope.charts)[0] // Start selected Shart at something simple
+	$scope.geomapMarkers = [] // This will hold all of the people's markers for the map
+	$http.get("/members.json").then(function(res){ // Fetch the data
+			$scope.dali_data = res.data // Make our dali_data equal to the data we imported
+			if ($scope.dali_data){  // Check to make sure it exists
+				for (var node of $scope.dali_data) {  // iterate over each node (person)
+					if (node.project.length == 0){ // If their project array is empty
+						node.project = new Array("") // Make it an array with one element that is empty, this makes things easier for sorting
 					}
 				}
 			}
-			$scope.updateTerms()
-			$scope.updateProjects()
-			$scope.init()
+			$scope.initCharts() // Initiate all the Charts
+			$scope.initGeoMap() // Initiate the Geomap
+			$scope.updateDataSets() // Update the Projects, Terms, and Markers lists. 
 		});
-	$scope.checkSort = function(actual, expected){
+
+	// Functions
+	$scope.checkSort = function(actual, expected){ // Custom sort function for the query
 		if (typeof expected == 'object') {
 			if (expected.length == 0) {
-				return true
+				return true // Allow if our expected is an object, and it has length zero, this will return all of the nodes
 			}
 			for (var project of expected) {
 				if (actual.indexOf(project) > -1){
-					return true
-				}
+					return true // If the node we are checking contains something from the node we are querying
+				}  
 			}
 		}
 		else if (typeof expected == 'string' && typeof actual == 'string'){
 			if (actual.includes(expected)) {
-				return true
+				return true // If the string we are checking contains the string we are checking for
 			}
 		}
 		return false
 	}
+
+	// Saves the data back to the .txt file so that we can keep our data safe and sound
 	$scope.saveData = function() {
 		$http.post('/saveData', $scope.dali_data).then(function(res){
 			if (res.data){
@@ -50,46 +55,17 @@ angular.module("myApp", [])
 		})
 	}
 
-	$scope.updateTerms = function() {
-		$scope.terms = {
-			'19W' : 0,
-			'19S' : 0,
-			'19X' : 0,
-			'19F' : 0,
-			'20W' : 0
-		}
-		for (var node of $scope.dali_data) {
-			for (var term of node.terms_on){
-				if (term in $scope.terms) {
-					$scope.terms[term] += 1
-				} else {
-					$scope.terms[term] = 1
-				}
-			}
-		}
-	}
-	$scope.updateProjects = function() {
-		$scope.projects = {}
-		for (var node of $scope.dali_data) {
-			for (var project of node.project) {
-				if (project in $scope.projects){
-					$scope.projects[project] += 1
-				} else if (project != "") {
-					$scope.projects[project] = 1
-				}
-			}
-		}
-	}
-
-	$scope.updateChartsView = function() {
-		$scope.ctx = $("#"+$scope.selectedChart)
+	// Initiates the Charts
+	$scope.initCharts = function() {
+		var ctx = $("#"+$scope.selectedChart) // This is DOM object that will be the canvas for each respective Chart
 		var colorsArray = new Array()
 		i = 0
 		for (var key in $scope.projects){
 			colorsArray.push("#"+rainbow.colorAt(i))
 			i += parseInt(100 / Object.keys($scope.projects).length)
 		}
-		if ($scope.ctx[0] !== undefined){
+		console.log(colorsArray)
+		if (ctx[0] !== undefined){ // Checks to make sure that the canvas DOM element is there
 			$scope.termChart = new Chart($("#termChart"), {
 			    type: 'bar',
 			    data: {
@@ -135,23 +111,55 @@ angular.module("myApp", [])
 		    	}
 			});
 		}
-		$scope.updateCharts()
 	}
 
-	$scope.updateCharts = function() {
-		$scope.updateTerms()
-		$scope.termChart.data.labels = Object.keys($scope.terms)
-		$scope.termChart.data.datasets[0].data = Object.values($scope.terms)
-		$scope.termChart.update();
-
-		$scope.updateProjects()
-		$scope.projectChart.data.labels = Object.keys($scope.projects)
-		$scope.projectChart.data.datasets[0].data = Object.values($scope.projects)
-		$scope.projectChart.update();
-
-		$scope.updateGeoMap()
+	// This initiates the GeoMap. This is seperate, becuase we don't want to update the GeoMap everytime the <select> to change the chart is changed
+	$scope.initGeoMap = function() {
+		mapboxgl.accessToken = 'pk.eyJ1IjoiYmVuamNhcGUiLCJhIjoiY2pydG83cHhjMDI5aTQ0bWtyMHh2dHc2cSJ9.JbWYHd47sCFP1hE1I8X_0Q';
+		$scope.geomap = new mapboxgl.Map({
+			container: 'geoChart', // container id
+			style: 'mapbox://styles/mapbox/dark-v9', // stylesheet location
+			center: [-72.2925909, 43.7047927], // starting position [lng, lat]
+			zoom: 5, // starting zoom
+			trackResize: true
+		});
 	}
-	$scope.updateGeoMap = function() {
+
+	// Iterates over the information from dali_data and refreshes the information in terms dictionary
+	$scope.updateTerms = function() {
+		$scope.terms = {
+			'19W' : 0,
+			'19S' : 0,
+			'19X' : 0,
+			'19F' : 0,
+			'20W' : 0
+		}
+		for (var node of $scope.dali_data) {
+			for (var term of node.terms_on){
+				if (term in $scope.terms) {
+					$scope.terms[term] += 1
+				} else {
+					$scope.terms[term] = 1
+				}
+			}
+		}
+	}
+
+	// Iterates over the information from dali_data and refreshes the information in projects dictionary
+	$scope.updateProjects = function() {
+		$scope.projects = {}
+		for (var node of $scope.dali_data) {
+			for (var project of node.project) {
+				if (project in $scope.projects){
+					$scope.projects[project] += 1
+				} else if (project != "") {
+					$scope.projects[project] = 1
+				}
+			}
+		}
+	}
+	// Removes all of the old markers, and creates the new ones.
+	$scope.updateMarkers = function() {
 		for (var mark of $scope.geomapMarkers){
 				mark.remove()
 			}
@@ -168,17 +176,30 @@ angular.module("myApp", [])
 			$scope.geomapMarkers.push(marker)
 		}
 	}
-	$scope.init = function() {
-		mapboxgl.accessToken = 'pk.eyJ1IjoiYmVuamNhcGUiLCJhIjoiY2pydG83cHhjMDI5aTQ0bWtyMHh2dHc2cSJ9.JbWYHd47sCFP1hE1I8X_0Q';
-		$scope.geomap = new mapboxgl.Map({
-			container: 'geoChart', // container id
-			style: 'mapbox://styles/mapbox/light-v9', // stylesheet location
-			center: [-72.2925909, 43.7047927], // starting position [lng, lat]
-			zoom: 5, // starting zoom
-			trackResize: true
-		});
-		$scope.updateGeoMap()
+
+	// Updates all the data sets
+	$scope.updateDataSets = function() {
+		$scope.updateTerms()
+		$scope.updateProjects()
+		$scope.updateMarkers()
 	}
+
+	// Update all the Charts together, not the GeoMap though.
+	$scope.updateCharts = function() {
+		$scope.initCharts()
+		$scope.updateTerms()
+		$scope.updateProjects()
+
+		$scope.termChart.data.labels = Object.keys($scope.terms)
+		$scope.termChart.data.datasets[0].data = Object.values($scope.terms)
+		$scope.termChart.update();
+
+		$scope.projectChart.data.labels = Object.keys($scope.projects)
+		$scope.projectChart.data.datasets[0].data = Object.values($scope.projects)
+		$scope.projectChart.update();
+	}
+
+
 
 	if ($scope.selectedChart == 'geomap'){
 		$scope.geomap.resize()
