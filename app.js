@@ -1,3 +1,5 @@
+
+// Using rainbow to help make a gradient for the Charts
 var rainbow = new Rainbow()
 rainbow.setSpectrum("#42f4a7","#9941f2");
 
@@ -10,7 +12,7 @@ angular.module("myApp", [])
 		'termChart': 'On Terms', 
 		'projectChart': "Project Distribution",
 	}
-	$scope.selectedChart = Object.keys($scope.charts)[0] // Start selected Shart at something simple
+	//$scope.selectedChart = Object.keys($scope.charts)[0] // Start selected Shart at something simple
 	$scope.geomapMarkers = [] // This will hold all of the people's markers for the map
 	$http.get("/members.json").then(function(res){ // Fetch the data
 			$scope.dali_data = res.data // Make our dali_data equal to the data we imported
@@ -21,7 +23,6 @@ angular.module("myApp", [])
 					}
 				}
 			}
-			$scope.initCharts() // Initiate all the Charts
 			$scope.initGeoMap() // Initiate the Geomap
 			$scope.updateDataSets() // Update the Projects, Terms, and Markers lists. 
 		});
@@ -58,13 +59,15 @@ angular.module("myApp", [])
 	// Initiates the Charts
 	$scope.initCharts = function() {
 		var ctx = $("#"+$scope.selectedChart) // This is DOM object that will be the canvas for each respective Chart
+		
+		// Thic colors array will be the gradient that will be used when drawing the Charts
 		var colorsArray = new Array()
 		i = 0
 		for (var key in $scope.projects){
 			colorsArray.push("#"+rainbow.colorAt(i))
 			i += parseInt(100 / Object.keys($scope.projects).length)
 		}
-		console.log(colorsArray)
+
 		if (ctx[0] !== undefined){ // Checks to make sure that the canvas DOM element is there
 			$scope.termChart = new Chart($("#termChart"), {
 			    type: 'bar',
@@ -186,22 +189,23 @@ angular.module("myApp", [])
 
 	// Update all the Charts together, not the GeoMap though.
 	$scope.updateCharts = function() {
+		// Reinitiate the charts
 		$scope.initCharts()
+		// Update the Data Sets
 		$scope.updateTerms()
 		$scope.updateProjects()
 
+		// Bind the Data Sets to the Charts
+
+		// Term Chart
 		$scope.termChart.data.labels = Object.keys($scope.terms)
 		$scope.termChart.data.datasets[0].data = Object.values($scope.terms)
 		$scope.termChart.update();
 
+
+		// Project Chart
 		$scope.projectChart.data.labels = Object.keys($scope.projects)
 		$scope.projectChart.data.datasets[0].data = Object.values($scope.projects)
 		$scope.projectChart.update();
-	}
-
-
-
-	if ($scope.selectedChart == 'geomap'){
-		$scope.geomap.resize()
 	}
 })
