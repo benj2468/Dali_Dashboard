@@ -6,5 +6,6 @@ To Run:
 
 1) Enter Terminal
 2) Access Respository
-3) <code>node server.js</code>
-4) Browse to localhost:8080
+3) "npm i"
+4) "npm start"
+5) Browse to localhost:8080

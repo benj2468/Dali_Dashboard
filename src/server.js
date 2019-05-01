@@ -15,7 +15,7 @@ app.post("/saveData", function(req, res, next) {
     if (err) { res.end(0) }
     else { res.end(1) }
   })
-  
+
 })
 
 app.all("/*", function(req, res, next){
@@ -27,8 +27,8 @@ app.all("/*", function(req, res, next){
     var q = url.parse(req.url, true);
     var fileName = "." + q.pathname;
     if (fileName === "./"){
-      fileName = "./index.html";
-    } 
+      fileName = "src/index.html";
+    }
     fs.readFile(fileName, function(err, data) {
     if (err) {
       return res.end("404 Not Found: " + fileName);
