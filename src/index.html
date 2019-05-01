@@ -7,15 +7,15 @@
 	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-	<script src="node_modules/chart.js/dist/Chart.js"></script>
-	<script src="node_modules/rainbowvis.js/rainbowvis.js"></script>
+	<script src="./node_modules/chart.js/dist/Chart.js"></script>
+	<script src="./node_modules/rainbowvis.js/rainbowvis.js"></script>
 	<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.js'></script>
 
 	<!-- CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"/>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 	<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.css' rel='stylesheet' />
-	<link rel="stylesheet" href="style.css"/>
+	<link rel="stylesheet" href="src/style.css"/>
 
 </head>
 
@@ -73,7 +73,7 @@
 					</div>
 				</div>
 			</div>
-				
+
 			<div class="col-3">
 				<div class="form-group">
 					<label>Charts</label>
@@ -143,7 +143,7 @@
 					  <div class="form-group row">
 					  	<label class="col-2">Projects</label>
 					  	<div class="input-group col-10">
-					  		<select class="form-control" multiple ng-model="node.project" ng-options="key as key for (key, value) in projects"></select>	
+					  		<select class="form-control" multiple ng-model="node.project" ng-options="key as key for (key, value) in projects"></select>
 					  	</div>
 					  </div>
 					</form>
@@ -157,6 +157,6 @@
 		</div>
 	</div>
 </body>
-<script src="app.js"></script>
-<script src="javascript.js"></script>
+<script src="src/app/app.js"></script>
+<script src="src/index.js"></script>
 </html>
